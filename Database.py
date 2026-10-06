@@ -72,7 +72,7 @@ def remover_dados():
         conexao = sqlite3.connect("jogos.db")
         cursor = conexao.cursor()
         cursor.execute(
-            "DELETE FROM jogos WHERE id = ?", (id_jogo)
+            "DELETE FROM jogos WHERE id = ?", (id_jogo,)
         )
         conexao.commit()
         conexao.close()
@@ -107,26 +107,28 @@ def alterna_concluido():
     
 
 # Função para mostrar a tabela
-def atualizar_db():
+def atualizar_db(event=None):
     for linha in tabela.get_children():
         tabela.delete(linha)
 
     filtro = combo_filtro.get()
+    texto_pesquisa = entrada_pesquisa.get()
+
     conexao = sqlite3.connect("jogos.db")
     cursor = conexao.cursor()
 
     # Modifica a query SQL dependendo do filtro selecionado
     if filtro == "Concluídos":
         cursor.execute(
-            "SELECT * FROM jogos WHERE concluido = 1"
+            "SELECT * FROM jogos WHERE concluido = 1 AND nome LIKE ?", (f"%{texto_pesquisa}%",)
         )
     elif filtro == "Não Concluídos":
         cursor.execute(
-            "SELECT * FROM jogos WHERE concluido = 0"
+            "SELECT * FROM jogos WHERE concluido = 0 AND nome LIKE ?", (f"%{texto_pesquisa}%",)
         )
     else:
         cursor.execute(
-            "SELECT * FROM jogos"
+            "SELECT * FROM jogos WHERE nome LIKE ?", (f"%{texto_pesquisa}%",)
         )
 
     dados = cursor.fetchall()
@@ -144,7 +146,7 @@ iniciar_db()
 
 janela = tk.Tk()
 janela.title("Coleção de Jogos")
-janela.geometry("550x550")
+janela.geometry("600x550")
 
 # Campo: Nome
 lbl_nome = tk.Label(janela, text="Nome:")
@@ -169,18 +171,26 @@ chk_concluido.pack(pady=5)
 btn_salvar = tk.Button(janela, text="Salvar na lista", command=inserir_dados)
 btn_salvar.pack(pady=5)
 
-# Frame: Filtros e seleção
+# Frame: Filtros, pesquisa e seleção
 frame_opcoes = tk.Frame(janela)
 frame_opcoes.pack(pady=5, fill=tk.X, padx=10)
 
 lbl_filtrar = tk.Label(frame_opcoes, text="Filtrar por:")
-lbl_filtrar.pack(side=tk.LEFT, padx=5)
+lbl_filtrar.pack(side=tk.LEFT, padx=2)
 
 # Combobox: Filtro
 combo_filtro = ttk.Combobox(frame_opcoes, values=["Todos", "Concluídos", "Não Concluídos"], state="readonly", width=15)
 combo_filtro.set("Todos") # Escolha padrão
-combo_filtro.bind("<<ComboboxSelected>>", lambda e: atualizar_db()) # Atualiza a tabela se o filtro mudar
+combo_filtro.bind("<<ComboboxSelected>>", atualizar_db) # Atualiza a tabela se o filtro mudar
 combo_filtro.pack(side=tk.LEFT, padx=5)
+
+# Barra de Pesquisa
+lbl_pesquisa = tk.Label(frame_opcoes, text="Buscar:")
+lbl_pesquisa.pack(side=tk.LEFT, padx=2)
+
+entrada_pesquisa = tk.Entry(frame_opcoes, width=15)
+entrada_pesquisa.pack(side=tk.LEFT, padx=5)
+entrada_pesquisa.bind("<KeyRelease>", atualizar_db) # Atualiza em tempo real com o evento de digitação
 
 # Botão: Remover
 btn_remover = tk.Button(frame_opcoes, text="Remover", command=remover_dados, fg="red")
