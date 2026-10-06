@@ -1,10 +1,16 @@
 import os
+import sys
 import sqlite3
 import tkinter as tk
 from tkinter import messagebox, ttk
 
 # Configuração de Caminhos e Pastas
-DIR_ATUAL = os.path.dirname(os.path.abspath(__file__))
+# Verifica como o programa está sendo executado
+if getattr(sys, 'frozen', False):
+    DIR_ATUAL = os.path.dirname(sys.executable)
+else:
+    DIR_ATUAL = os.path.dirname(os.path.abspath(__file__))
+
 NOME_PASTA = "dados"
 CAMINHO_PASTA = os.path.join(DIR_ATUAL, NOME_PASTA)
 CAMINHO_DB = os.path.join(CAMINHO_PASTA, "jogos.db")
