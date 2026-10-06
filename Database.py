@@ -1,10 +1,21 @@
+import os
 import sqlite3
 import tkinter as tk
 from tkinter import messagebox, ttk
 
+# Configuração de Caminhos e Pastas
+DIR_ATUAL = os.path.dirname(os.path.abspath(__file__))
+NOME_PASTA = "dados"
+CAMINHO_PASTA = os.path.join(DIR_ATUAL, NOME_PASTA)
+CAMINHO_DB = os.path.join(CAMINHO_PASTA, "jogos.db")
+
+# Cria a pasta caso não exista
+if not os.path.exists(CAMINHO_PASTA):
+    os.makedirs(CAMINHO_PASTA)
+
 # Iniciar o banco de dados
 def iniciar_db():
-    conexao = sqlite3.connect("jogos.db")
+    conexao = sqlite3.connect(CAMINHO_DB)
     cursor = conexao.cursor()
     cursor.execute(
         """
@@ -38,7 +49,7 @@ def inserir_dados():
         return
 
     # Inserindo valores
-    conexao = sqlite3.connect("jogos.db")
+    conexao = sqlite3.connect(CAMINHO_DB)
     cursor = conexao.cursor()
     cursor.execute(
         "INSERT INTO jogos (nome, ano, concluido) VALUES (?,?,?)",
@@ -69,7 +80,7 @@ def remover_dados():
 
     # Confirmação para remover o item
     if messagebox.askyesno("Confirmação", f"Tem certeza que deseja remover o jogo '{valores[1]}'?"):
-        conexao = sqlite3.connect("jogos.db")
+        conexao = sqlite3.connect(CAMINHO_DB)
         cursor = conexao.cursor()
         cursor.execute(
             "DELETE FROM jogos WHERE id = ?", (id_jogo,)
@@ -95,7 +106,7 @@ def alterna_concluido():
     # Inverte o estado
     novo_status = False if status_atual == "Sim" else True
 
-    conexao = sqlite3.connect("jogos.db")
+    conexao = sqlite3.connect(CAMINHO_DB)
     cursor = conexao.cursor()
     cursor.execute(
         "UPDATE jogos SET concluido = ? WHERE id = ?", (novo_status, id_jogo)
@@ -114,7 +125,7 @@ def atualizar_db(event=None):
     filtro = combo_filtro.get()
     texto_pesquisa = entrada_pesquisa.get()
 
-    conexao = sqlite3.connect("jogos.db")
+    conexao = sqlite3.connect(CAMINHO_DB)
     cursor = conexao.cursor()
 
     # Modifica a query SQL dependendo do filtro selecionado
